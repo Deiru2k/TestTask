@@ -38,7 +38,7 @@ class BaseHandler(AclMixin, RequestHandler):
         self.posts = self.db['posts']
 
 
-class MainHandler(BaseHandler):
+class Main(BaseHandler):
 
     @authenticated_async
     @asynchronous
@@ -46,7 +46,7 @@ class MainHandler(BaseHandler):
         self.render('index.html')
 
 
-class PostsHandler(BaseHandler):
+class Posts(BaseHandler):
 
     @authenticated_async
     @acl('retrieve')
@@ -82,7 +82,11 @@ class PostsHandler(BaseHandler):
         self.finish()
 
 
-class UserHandler(BaseHandler):
+class Users(BaseHandler):
+
+    @authenticated_async
+    @acl('retrieve')
+    @coroutine
     def get(self, _id=None):
         if _id:
             try:
@@ -95,7 +99,15 @@ class UserHandler(BaseHandler):
                 self.set_status(500, reason="Invalid ID")
                 self.write('Invalid ID')
                 self.finish()
+        else:
+            users = self.users.find()
+            users = yield motor.Op(users.to_list)
+            self.write(json.dumps(users))
+            self.finish()
 
+    @authenticated_async
+    @acl('update')
+    @coroutine
     def put(self, _id):
         data = tornado.escape.json_decode(self.request.body)
         try:
@@ -153,7 +165,7 @@ class RegisterHandler(BaseHandler):
         password = hashlib.sha256(self.get_argument('password')).hexdigest()
         user = yield motor.Op(self.users.insert, {'email': email,
                                                   'password': password,
-                                                  'permissions': ['create'],
+                                                  'permissions': ['posts@create'],
                                                   'groups': ['user']})
         if type(user) == type(ObjectId):
             self.redirect('main')
@@ -164,9 +176,11 @@ static_path = os.path.join(os.path.dirname(__file__), "res")
 
 application = Application(
     [
-        (r'/', MainHandler),
-        (r'/posts', PostsHandler),
-        (r'/posts/(\d+\w+)', PostsHandler),
+        (r'/', Main),
+        (r'/posts', Posts),
+        (r'/posts/(\d+\w+)', Posts),
+        (r'/users', Users),
+        (r'/users/(\d+\w+)', Users),
         (r'/login', LoginHandler),
         (r'/logout', LogoutHandler),
         (r'/signup', RegisterHandler),

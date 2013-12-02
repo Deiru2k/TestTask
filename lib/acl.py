@@ -13,14 +13,16 @@ def acl(permission):
         @coroutine
         def inner(self, *args, **kwargs):
             self._auto_finish = False
-            print permission
+            if '@' not in permission:
+                route = self.__class__.__name__.lower()
+                full_permission = "%s@%s" % (route, permission)
+            else:
+                full_permission = permission
             user = yield Task(self.get_current_user_async)
-            check = yield Task(self.check_acl_permissions, permission, user)
+            check = yield Task(self.check_acl_permissions, full_permission, user)
             if check:
-                print "Granted"
                 f(self, *args, **kwargs)
             else:
-                "Not Granted"
                 self.clear()
                 self.set_status(401)
                 self.write('%s | No Permission' % self._status_code)
