@@ -1,0 +1,13 @@
+<form>
+    Title: <input type="text" ng-model="post.title"><br>
+    Post:<br>
+    <textarea ng-model="post.body" placeholder="Your post here"></textarea><br>
+    <button ng-click="submitPost()">Submit</button>
+</form>
+<hr>
+<ul>
+    <li ng-repeat="post in posts">
+        <h3>{{post.title}}</h3>
+        <p>{{post.body}}</p>
+    </li>
+</ul>
