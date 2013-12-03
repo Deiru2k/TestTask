@@ -1,15 +1,30 @@
 <html ng-app="TestTask">
 <head>
-  <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.3/angular.min.js"></script>
-  <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.3/angular-route.js"></script>
-  <script src="/res/js/script.js"></script>
-  <title>My Cool App</title>
+    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.3/angular.min.js"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.3/angular-route.js"></script>
+    <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css">
+    <script src="/res/js/script.js"></script>
+    <title>My Cool App</title>
 </head>
 <body>
+    <nav class="navbar navbar-default" role="navigation">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header">
+            <a class="navbar-brand" href="#">Brand</a>
+            <ul class="nav navbar-nav">
+                <li><a href="#/groups">Groups</a></li>
+                <li><a href="#/users">Users</a></li>
+            </ul>
+        </div>
+    </nav>
+  </div>
+    <div class="container">
+        <div ng-view>
+            View Here!
+        </div>
+    </div>
 
-    <ng-view>
-        View Here!
-    </ng-view>
- 
+     <script src="//netdna.bootstrapcdn.com/bootstrap/3.0.2/js/bootstrap.min.js"></script>
 </body>
 </html>

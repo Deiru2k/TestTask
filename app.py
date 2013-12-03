@@ -110,15 +110,68 @@ class Users(BaseHandler):
     @coroutine
     def put(self, _id):
         data = tornado.escape.json_decode(self.request.body)
+        data.pop('_id')
         try:
             _id = ObjectId(_id)
-            user = yield motor.Op(self.users.find_and_modify, {'_id': _id}, {'$set': data}, new=True)
+            user = yield motor.Op(self.users.find_and_modify, _id, {'$set': data}, new=True)
             self.write(json.dumps(user))
             self.finish()
         except InvalidId:
             self.clear()
             self.set_status(500, reason="Invalid ID")
             self.write('Invalid ID')
+            self.finish()
+
+
+class Groups(BaseHandler):
+
+    @authenticated_async
+    @acl('retrieve')
+    @coroutine
+    def get(self, _id=None):
+        if _id:
+            try:
+                _id = ObjectId(_id)
+                group = yield motor.Op(self.groups.find_one, _id)
+                self.write(json.dumps(group))
+                self.finish()
+            except InvalidId:
+                self.clear()
+                self.set_status(500, reason="Invalid ID")
+                self.write("Invalid ID")
+                self.finish()
+        else:
+            groups = self.groups.find()
+            groups = yield motor.Op(groups.to_list)
+            self.write(json.dumps(groups))
+            self.finish()
+
+    @authenticated_async
+    @acl('create')
+    @coroutine
+    def post(self, _id=None):
+        data = tornado.escape.json_decode(self.request.body)
+        print data
+        group_id = yield motor.Op(self.groups.insert, data)
+        group = yield motor.Op(self.groups.find_one, group_id)
+        self.write(json.dumps(group))
+        self.finish()
+
+    @authenticated_async
+    @acl('update')
+    @coroutine
+    def put(self, _id):
+        data = tornado.escape.json_decode(self.request.body)
+        data.pop('_id')
+        try:
+            _id = ObjectId(_id)
+            group = yield motor.Op(self.groups.find_and_modify, _id, {'$set': data}, new=True)
+            self.write(json.dumps(group))
+            self.finish()
+        except InvalidId:
+            self.clear()
+            self.set_status(500, reason="Invalid ID")
+            self.write("Invalid ID")
             self.finish()
 
 
@@ -181,6 +234,8 @@ application = Application(
         (r'/posts/(\d+\w+)', Posts),
         (r'/users', Users),
         (r'/users/(\d+\w+)', Users),
+        (r'/groups', Groups),
+        (r'/groups/(\d+\w+)', Groups),
         (r'/login', LoginHandler),
         (r'/logout', LogoutHandler),
         (r'/signup', RegisterHandler),
@@ -190,7 +245,7 @@ application = Application(
     login_url="/login",
     template_path=os.path.join(os.path.dirname(__file__), "templates"),
 )
-application.listen(8080)
+application.listen(9999)
 
 try:
     print "Start"
